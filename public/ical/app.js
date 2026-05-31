@@ -342,9 +342,22 @@
     const person = personSel.value;
     const events = perPerson.get(person) || [];
     if (!events.length) { setStatus("Pro tuto osobu nejsou žádné směny.", "err"); return; }
-    const year = events[0].year;
-    const ics = buildICS(events, person, noteEl.value);
-    downloadICS(ics, `rozpis-${safeFilename(person)}-${year}.ics`);
-    setStatus(`Hotovo — ${events.length} událostí.`, "ok");
+
+    // Group events by month and download a separate .ics per selected month.
+    const byMonth = new Map();
+    for (const ev of events) {
+      const key = `${ev.year}-${pad(ev.month)}`;
+      if (!byMonth.has(key)) byMonth.set(key, []);
+      byMonth.get(key).push(ev);
+    }
+    const keys = [...byMonth.keys()].sort();
+    let totalEv = 0;
+    for (const key of keys) {
+      const list = byMonth.get(key);
+      const ics = buildICS(list, person, noteEl.value);
+      downloadICS(ics, `rozpis-${safeFilename(person)}-${key}.ics`);
+      totalEv += list.length;
+    }
+    setStatus(`Hotovo — ${keys.length} souborů, ${totalEv} událostí.`, "ok");
   });
 })();
