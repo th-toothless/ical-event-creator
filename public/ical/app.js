@@ -2,19 +2,27 @@
 (() => {
   const $ = (id) => document.getElementById(id);
   const fileInput = $("file");
+  const monthBox = $("month-box");
   const personSel = $("person");
   const noteEl = $("note");
   const goBtn = $("go");
   const statusEl = $("status");
 
   const MONTH_SHEETS = ["01","02","03","04","05","06","07","08","09","10","11","12"];
+  const MONTH_NAMES = {
+    "01":"Leden", "02":"Únor", "03":"Březen", "04":"Duben",
+    "05":"Květen", "06":"Červen", "07":"Červenec", "08":"Srpen",
+    "09":"Září", "10":"Říjen", "11":"Listopad", "12":"Prosinec"
+  };
   const NAME_COL = 36;       // column with person names ("Podpis")
-  const DAY_ROW = 6;         // row index with day numbers "1." "2." ...
+  const DAY_ROW = 6;         // row index with day numbers "1." "2." …
   const FIRST_NAME_ROW = 9;  // names start here
   const DATE_ROW = 5;        // sheet's month date lives at col 1 row 5
   const DATE_COL = 1;
 
   let workbook = null;
+  let availableSheets = [];  // sheet names that exist in current workbook
+  let selectedSheets = [];   // currently checked sheet names
   /** Map<name, Array<{year,month,day,code}>> */
   let perPerson = new Map();
 
@@ -75,10 +83,11 @@
     return cols;
   }
 
-  function parseWorkbook(wb) {
+  function parseWorkbook(wb, sheetsToParse) {
     perPerson = new Map();
     for (let i = 0; i < MONTH_SHEETS.length; i++) {
       const name = MONTH_SHEETS[i];
+      if (!sheetsToParse.includes(name)) continue;
       const sheet = wb.Sheets[name];
       if (!sheet) continue;
       const aoa = sheetToAOA(sheet);
@@ -138,6 +147,48 @@
     }
     personSel.disabled = false;
     goBtn.disabled = false;
+  }
+
+  // ---------- month selection UI ----------
+
+  function buildMonthCheckboxes() {
+    monthBox.innerHTML = "";
+    for (const code of MONTH_SHEETS) {
+      const exists = availableSheets.includes(code);
+      const label = document.createElement("label");
+      label.className = "month-item" + (exists ? " checked" : " disabled");
+      label.title = exists ? MONTH_NAMES[code] : `${MONTH_NAMES[code]} — list nenalezen`;
+
+      const cb = document.createElement("input");
+      cb.type = "checkbox";
+      cb.value = code;
+      cb.checked = exists;
+      cb.disabled = !exists;
+      if (exists) {
+        cb.addEventListener("change", () => {
+          label.classList.toggle("checked", cb.checked);
+          selectedSheets = Array.from(monthBox.querySelectorAll('input[type="checkbox"]:checked')).map(i => i.value);
+          if (workbook) {
+            parseWorkbook(workbook, selectedSheets);
+            populatePersonDropdown();
+            const total = [...perPerson.values()].reduce((a, v) => a + v.length, 0);
+            setStatus(`Načteno ${perPerson.size} osob, ${total} směn.`, "ok");
+          }
+          updateGoButton();
+        });
+      }
+
+      const span = document.createElement("span");
+      span.textContent = MONTH_NAMES[code];
+      label.appendChild(cb);
+      label.appendChild(span);
+      monthBox.appendChild(label);
+    }
+    selectedSheets = Array.from(monthBox.querySelectorAll('input[type="checkbox"]:checked')).map(i => i.value);
+  }
+
+  function updateGoButton() {
+    goBtn.disabled = !selectedSheets.length || !perPerson.size;
   }
 
   // ---------- iCal building ----------
@@ -275,7 +326,9 @@
       setStatus("Načítám…");
       const buf = await f.arrayBuffer();
       workbook = XLSX.read(buf, { type: "array", cellDates: true });
-      parseWorkbook(workbook);
+      availableSheets = MONTH_SHEETS.filter(code => !!workbook.Sheets[code]);
+      buildMonthCheckboxes();
+      parseWorkbook(workbook, selectedSheets);
       populatePersonDropdown();
       const total = [...perPerson.values()].reduce((a, v) => a + v.length, 0);
       setStatus(`Načteno ${perPerson.size} osob, ${total} směn.`, "ok");
