@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Rozpis → iCal</title>
+<style>
+  :root { color-scheme: light dark; }
+  body { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; max-width: 640px; margin: 2rem auto; padding: 0 1rem; line-height: 1.5; }
+  h1 { font-size: 1.4rem; }
+  label { display: block; margin-top: 1rem; font-weight: 600; }
+  input, select, textarea, button { width: 100%; padding: .55rem .7rem; font: inherit; border-radius: 8px; border: 1px solid #888; background: transparent; color: inherit; box-sizing: border-box; }
+  textarea { min-height: 80px; resize: vertical; }
+  button { margin-top: 1.25rem; cursor: pointer; background: #2563eb; color: #fff; border: none; font-weight: 600; }
+  button:disabled { opacity: .5; cursor: not-allowed; }
+  .muted { color: #888; font-size: .9rem; margin-top: .35rem; }
+  .ok { color: #16a34a; }
+  .err { color: #dc2626; white-space: pre-wrap; }
+  ul { padding-left: 1.2rem; }
+  code { background: #8881; padding: 0 .25rem; border-radius: 4px; }
+</style>
+</head>
+<body>
+  <h1>Rozpis služeb → iCal (.ics)</h1>
+  <p class="muted">Nahraj Excel rozpis, vyber jméno a stáhni kalendář pro import do Google / Apple / Outlook.</p>
+
+  <label for="file">1. Excel soubor (.xlsx)</label>
+  <input id="file" type="file" accept=".xlsx" />
+
+  <label for="person">2. Jméno</label>
+  <select id="person" disabled><option>— nejprve nahraj soubor —</option></select>
+
+  <label for="note">3. Poznámka (volitelné)</label>
+  <textarea id="note" placeholder="Např. „Stanice 1"… přidá se do popisu každé události."></textarea>
+
+  <button id="go" disabled>Stáhnout .ics</button>
+
+  <p id="status" class="muted"></p>
+
+  <h2 style="font-size:1rem;margin-top:2rem">Legenda</h2>
+  <ul class="muted">
+    <li><code>CD</code> — 24h služba (07:00 → 07:00 další den)</li>
+    <li><code>D</code> — denní (07:00 → 19:00)</li>
+    <li><code>N</code> — noční (19:00 → 07:00 další den)</li>
+    <li><code>G</code> — garáž (07:00 → 17:00)</li>
+  </ul>
+
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="./app.js"></script>
+</body>
+</html>
