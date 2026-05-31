@@ -18,19 +18,32 @@
   .err { color: #dc2626; white-space: pre-wrap; }
   ul { padding-left: 1.2rem; }
   code { background: #8881; padding: 0 .25rem; border-radius: 4px; }
+
+  .month-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: .5rem; margin-top: .5rem; }
+  .month-item { display: flex; align-items: center; gap: .4rem; padding: .35rem .5rem; border: 1px solid #888; border-radius: 8px; cursor: pointer; font-size: .9rem; }
+  .month-item input { width: auto; margin: 0; cursor: pointer; }
+  .month-item.disabled { opacity: .45; cursor: not-allowed; }
+  .month-item.disabled input { cursor: not-allowed; }
+  .month-item:not(.disabled):hover { background: #8881; }
+  .month-item.checked { border-color: #2563eb; background: #2563eb11; }
 </style>
 </head>
 <body>
   <h1>Rozpis služeb → iCal (.ics)</h1>
-  <p class="muted">Nahraj Excel rozpis, vyber jméno a stáhni kalendář pro import do Google / Apple / Outlook.</p>
+  <p class="muted">Nahraj Excel rozpis, vyber měsíce a jméno a stáhni kalendář pro import do Google / Apple / Outlook.</p>
 
   <label for="file">1. Excel soubor (.xlsx)</label>
   <input id="file" type="file" accept=".xlsx" />
 
-  <label for="person">2. Jméno</label>
+  <label>2. Měsíce</label>
+  <div id="month-box" class="month-grid" aria-label="Výběr měsíců">
+    <span class="muted" style="grid-column:1/-1;padding:0;border:none;">— nejprve nahraj soubor —</span>
+  </div>
+
+  <label for="person">3. Jméno</label>
   <select id="person" disabled><option>— nejprve nahraj soubor —</option></select>
 
-  <label for="note">3. Poznámka (volitelné)</label>
+  <label for="note">4. Poznámka (volitelné)</label>
   <textarea id="note" placeholder="Např. „Stanice 1"… přidá se do popisu každé události."></textarea>
 
   <button id="go" disabled>Stáhnout .ics</button>
